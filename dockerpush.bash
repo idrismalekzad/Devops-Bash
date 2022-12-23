@@ -1,16 +1,27 @@
 #!/bin/bash
-docker commit pedantic_antonelli ubuntu-1:v1-0
 
-docker save ubuntu-1:v1-0 > ~/ubuntu-backup-`date +%y%m%d`.tar
+echo "##########################################################################"
+echo "#########################`date +%Y/%m/%d-%H:%M`"
+echo "##########################################################################"
 
-docker tag ubuntu-1:v1-0 soheilpmr/devop06:ubuntu-backup-`date +%y%m%d%H`
+COUNTER=`docker ps --format "{{.Names}}" | awk '(NR>1)' | wc -l`
 
-docker push soheilpmr/devop06:ubuntu-backup-`date +%y%m%d%H`
+for((i=1;i<=$END;i++))
+do
+        CONTAINER=`docker ps --format "{{.Names}}" | awk '(NR>=1)' | head -n $i | tail -1`
+        IMAGENAME="soheilpmr/devop06:$CONTAINER-`date +%Y%m%d%H`"
 
-find ~ -name "ubuntu-backup*.tar" -mtime +7 -exec rm -rf {} \;
+        docker commit $CONTAINER $IMAGENAME
 
+        docker save $IMAGENAME > ~/backup-$CONTAINER-`date +%Y%m%d%H`
 
+        docker push $IMAGE
 
+done
+
+find ~ -name "backup-*.tar" -mtime +7 -exec rm -rf {} \;
+
+echo "###########################################################################"
 ~
 ~
 ~
